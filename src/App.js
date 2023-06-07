@@ -16,24 +16,24 @@ function App() {
   setIsLoading(true)
   setError(null);
   try{
-   const response= await fetch('https://swapi.dev/api/films/')
+   const response= await fetch('https://react-4961b-default-rtdb.firebaseio.com/movies.json')
    if(!response.ok){
     throw new Error("Something went wrong ....Retrying!")
   }
     const data= await response.json();
-      // if(!response.ok){
-      //   throw new Error("Something went wrong!")
-      // }
-       const transformedData = data.results.map((movieData) => {
-          return {
-            id: movieData.episode_id,
-            title: movieData.title,
-            openingText: movieData.opening_crawl,
-            releaseDate: movieData.release_date,
-          };
-        });
-        
-        setMovies(transformedData);
+      
+      const loadedMovies=[];
+      for(const key in data){
+        loadedMovies.push({
+          id:key,
+          title:data[key].title,
+          openingText:data[key].openingText,
+          releaseDate:data[key].releaseDate,
+
+        })
+      }
+      
+        setMovies(loadedMovies);
         
       }catch(error){
         setError(error.message)
@@ -48,10 +48,48 @@ function App() {
   useEffect(()=>{
         fetchMovieHandler()
   },[fetchMovieHandler]); 
+  const deleteMovieHandler = async (movieId) => {
+    try {
+      const response = await fetch(
+        `https://react-4961b-default-rtdb.firebaseio.com/movies/${movieId}.json`,
+        {
+          method: 'DELETE',
+        }
+      );
+      if (!response.ok) {
+        throw new Error('Something went wrong while deleting the movie!');
+      }
+      setMovies((prevMovies) =>
+        prevMovies.filter((movie) => movie.id !== movieId)
+      );
+    } catch (error) {
+      setError(error.message);
+    }
+  };
 
-  function addMovieHandler(movie){
-    console.log(movie)
+  async function addMovieHandler(movie) {
+    try {
+      const response = await fetch(
+        'https://react-4961b-default-rtdb.firebaseio.com/movies.json',
+        {
+          method: 'POST',
+          body: JSON.stringify(movie),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      if (!response.ok) {
+        throw new Error('Something went wrong while adding the movie!');
+      }
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      setError(error.message);
+    }
   }
+
+ 
   // useEffect(() => {
   //   if (retryCount === 0) return; // Skip initial retry
 
@@ -67,7 +105,7 @@ function App() {
 
   let content =<p>found no movies.</p>
   if(movies.length>0){
-    content=<MovieList movies={movies} />
+    content=<MovieList movies={movies} onDeleteMovie={deleteMovieHandler} />
   }
   if(error){
     content=<p>{error}</p>
