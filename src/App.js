@@ -1,6 +1,7 @@
 import React, { useState,useEffect,useCallback } from 'react';
 import MovieList from './components/MovieList';
 import './App.css';
+import AddMovie from './components/AddMovie';
 
 function App() {
   const [movies, setMovies] = useState([]);
@@ -47,6 +48,10 @@ function App() {
   useEffect(()=>{
         fetchMovieHandler()
   },[fetchMovieHandler]); 
+
+  function addMovieHandler(movie){
+    console.log(movie)
+  }
   // useEffect(() => {
   //   if (retryCount === 0) return; // Skip initial retry
 
@@ -73,6 +78,9 @@ function App() {
 
   return (
     <React.Fragment>
+      <section>
+        <AddMovie onAddMovie={addMovieHandler}/>
+      </section>
       <section>
         <button onClick={fetchMovieHandler} disabled={isLoading}>Fetch Movies</button>
         <button onClick={cancelRetryHandler} disabled={!retryCount || isLoading}>Cancel</button>
